@@ -6,6 +6,10 @@
 import sys
 import argparse
 import boto3
+import boto.ec2
+import time
+
+aws_region = "eu-west-2"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("asg_name_tag", type=str,
@@ -43,7 +47,7 @@ elif asg_count > 1:
 for asg_instance in asg_list[0]['Instances']:
   ec2_list.append(asg_instance['InstanceId'])
 
-ec2 = boto.resource('ec2')
+ec2 = boto3.resource('ec2')
 
 print("EC2s:")
 
@@ -51,6 +55,19 @@ for ec2_instance in ec2_list:
   instance = ec2.Instance(ec2_instance)
   ec2_start = instance.start()
   print(ec2_start['StartingInstances'][0]['InstanceId'] + ' is ' + ec2_start['StartingInstances'][0]['CurrentState']['Name'])
+
+ec2_up = False
+sleep_loop = 10
+ec2_connect = boto.ec2.connect_to_region(aws_region)
+all_ec2 = len(ec2.connect.get_all_instances(filters={'tag:Name':args.asg_name_tag+'*'}))
+
+while (not ec2_up) and (sleep_loop < 10):
+  time.sleep(30)
+  running_ec2 = len(ec2.connect.get_all_instances(filters={'instance-state-name' : 'running', 'tag:Name':args.asg_name_tag+'*'}))
+  if all_ec2 == running_ec2:
+    ec2_up = True
+  else:
+    sleep_loop += 1
 
 asg_resume = asg.resume_processes(
   AutoScalingGroupName=asg_list[0]['AutoScalingGroupName'],

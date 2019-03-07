@@ -53,7 +53,7 @@ asg_suspend = asg.suspend_processes(
   ],
 )
 
-ec2 = boto.resource('ec2')
+ec2 = boto3.resource('ec2')
 
 print("EC2s:")
 
