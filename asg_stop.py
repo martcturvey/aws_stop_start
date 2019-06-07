@@ -19,7 +19,7 @@ ec2_list = []
 
 page_iterator = paginator.paginate(
   PaginationConfig={'PageSize':100}
-}
+)
 
 filtered_asgs = page_iterator.search(
   'AutoScalingGroups[] | [?contains(Tags[?Key==`{}`].Value, `{}`)]'.format('Name', args.asg_name_tag)
@@ -29,7 +29,6 @@ for asg_found in filtered_asgs:
   print("ASGs:")
   print(asg_found['AutoScalingGroupName'])
   asg_list.append(asg_found)
-)
 
 if len(asg_list) == 0:
   print('No ASG matches')
