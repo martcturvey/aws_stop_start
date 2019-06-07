@@ -1,7 +1,7 @@
-# asg_start.py
-# 
-# Given ASG 'Name' tag, locate ASG & start attached EC2 instances
-# Scaling processes are resumed
+'''
+Given ASG 'Name' tag, locate ASG & start attached EC2 instances
+Scaling processes are resumed
+'''
 
 import sys
 import argparse
@@ -30,7 +30,7 @@ ec2_list = []
 
 page_iterator = paginator.paginate(
   PaginationConfig={'PageSize':100}
-}
+)
 
 filtered_asgs = page_iterator.search(
   'AutoScalingGroups[] | [?contains(Tags[?Key==`{}`].Value, `{}`)]'.format('Name', args.asg_name_tag)
@@ -40,14 +40,11 @@ for asg_found in filtered_asgs:
   print("ASGs:")
   print(asg_found['AutoScalingGroupName'])
   asg_list.append(asg_found)
-)
 
-asg_count = len(asg_list)
-
-if asg_count == 0:
+if len(asg_list) == 0:
   print('No ASG matches')
   sys.exit(1)
-elif asg_count > 1:
+elif len(asg_list) > 1:
   print('Multiple ASG matches')
   sys.exit(1)
 
@@ -63,7 +60,7 @@ started_list = []
 for ec2_instance in ec2_list:
   instance = ec2.Instance(ec2_instance)
   ec2_start = instance.start()
-  print(ec2_start['StartingInstances'][0]['InstanceId'] + ' is ' + ec2_start['StartingInstances'][0]['CurrentState']['Name'])
+  print(f"{ec2_start['StartingInstances'][0]['InstanceId']} is {ec2_start['StartingInstances'][0]['CurrentState']['Name']}")
   started_list.append(ec2_start['StartingInstances'][0]['InstanceId'])
 
 # Allow metadata to be populated

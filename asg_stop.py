@@ -1,7 +1,7 @@
-# asg_stop.py
-# 
-# Given ASG 'Name' tag, locate ASG & stop attached EC2 instances
-# Scaling processes are suspended
+'''
+Given ASG 'Name' tag, locate ASG & stop attached EC2 instances
+Scaling processes are suspended
+'''
 
 import sys
 import argparse
@@ -19,7 +19,7 @@ ec2_list = []
 
 page_iterator = paginator.paginate(
   PaginationConfig={'PageSize':100}
-}
+)
 
 filtered_asgs = page_iterator.search(
   'AutoScalingGroups[] | [?contains(Tags[?Key==`{}`].Value, `{}`)]'.format('Name', args.asg_name_tag)
@@ -29,14 +29,11 @@ for asg_found in filtered_asgs:
   print("ASGs:")
   print(asg_found['AutoScalingGroupName'])
   asg_list.append(asg_found)
-)
 
-asg_count = len(asg_list)
-
-if asg_count == 0:
+if len(asg_list) == 0:
   print('No ASG matches')
   sys.exit(1)
-elif asg_count > 1:
+elif len(asg_list) > 1:
   print('Multiple ASG matches')
   sys.exit(1)
 
@@ -60,5 +57,4 @@ print("EC2s:")
 for ec2_instance in ec2_list:
   instance = ec2.Instance(ec2_instance)
   ec2_stop = instance.stop()
-  print(ec2_stop['StoppingInstances'][0]['InstanceId'] + ' is ' + ec2_stop['StoppingInstances'][0]['CurrentState']['Name'])
-
+  print(f"{ec2_stop['StoppingInstances'][0]['InstanceId']} is {ec2_stop['StoppingInstances'][0]['CurrentState']['Name']}")
